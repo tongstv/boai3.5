@@ -297,7 +297,6 @@ async function gettoken() {
     } else {
         setTimeout(() => {
 
-
             landangnhap = 0;
         }, 15 * 60000)
         sendsms("Please changer new ip or wait 15m")

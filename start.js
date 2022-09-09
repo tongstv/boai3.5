@@ -3,6 +3,7 @@ var stoploss = 0
 var profit = 0;
 var setai = 0;
 var phantramvon = 0;
+var nextrade = 0;
 
 async function appstart() {
 
@@ -76,12 +77,14 @@ async function appstart() {
                         trade = 0;
                         sendsms("Profit: Blance " + await getBlance(window.conf.type) + "$");
                     }
+                    if (Date.now() < nextrade) {
+                        trade = 0;
+                    }
 
 
                     if (trade == 1) {
 
-
-
+                        nextrade = Date.now() + 15000;
 
 
                         localStorage.setItem("intrade", 1);
