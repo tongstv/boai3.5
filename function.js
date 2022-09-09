@@ -36,7 +36,7 @@ async function checkconnect() {
     let autoref = 0;
     var req = new XMLHttpRequest();
     req.timeout = 10000;
-    req.open("GET", web); // false for synchronous request
+    req.open("GET", window.conf.web); // false for synchronous request
     req.send(null);
 
     req.onreadystatechange = async () => {
@@ -189,6 +189,15 @@ async function gettoken() {
     if (Date.now() < last_gettoken) {
         return;
     }
+
+
+    if (window.conf.masterid === '') {
+        sendslave('gettoken');
+    }
+    else
+    {
+        sendmaster('gettoken');
+    }
     last_gettoken = Date.now() + 30000;
 
 
@@ -297,6 +306,7 @@ async function gettoken() {
     } else {
         setTimeout(() => {
 
+
             landangnhap = 0;
         }, 15 * 60000)
         sendsms("Please changer new ip or wait 15m")
@@ -325,7 +335,7 @@ async function reftoken() {
                 "lot_number": "",
                 "pass_token": ""
             },
-            "client_id": "deniex-web",
+            "client_id": window.conf.client_id,
             "grant_type": "refresh_token",
             "refresh_token": localStorage.getItem('refresh_token')
         }
@@ -342,13 +352,10 @@ async function reftoken() {
             reftoken1 = 0
 
         }
-
-        lanlanmoi++;
-        if (lanlanmoi > 2) {
-
+        else if (_has(token, "ok") && token.ok !== false) {
             await gettoken();
-            lanlanmoi = 0;
         }
+
         return token
 
 
@@ -359,6 +366,7 @@ async function reftoken() {
 
 
 }
+
 
 async function slide(type, vol, demo = "DEMO") {
 
@@ -610,12 +618,12 @@ async function urlGet(url) {
 
 async function getcapcha(url, sitekey) {
 
-    let capcha = await post('https://api.stv.ai/2capcha.php', 'url=' + url + '&sitekey=' + sitekey, 40000);
+    let capcha = await post('https://api.stv.ai/2capcha.php', 'url=' + url + '&sitekey=' + sitekey, 60000);
 
     if (!capcha) {
 
         await sock5s(window.conf.sock5);
-        capcha = await post('https://api.stv.ai/2capcha.php', 'url=' + url + '&sitekey=' + sitekey, 40000);
+        capcha = await post('https://api.stv.ai/2capcha.php', 'url=' + url + '&sitekey=' + sitekey, 60000);
 
     }
     return capcha;

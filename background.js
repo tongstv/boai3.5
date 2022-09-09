@@ -2,7 +2,6 @@ var token = localGet('token');
 var chatid = localGet('chatid');
 var email = localGet('email');
 var password = localGet('passsword');
-var web = "https://vista.trade"
 var d = new Date();
 var botid = localGet('botid')
 var landangnhap = 0;
