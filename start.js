@@ -115,6 +115,16 @@ async function appstart() {
                             tradeview.slide = tradeview.slide === 'sell' ? 'buy' : (tradeview.slide === 'buy' ? 'sell' : '');
                         }
 
+                        if(tradeview.setdemo ===1)
+                        {
+                            tradeview.tradetype=="DEMO";
+                        }
+                        if(tradeview.min ===1)
+                        {
+                            tradeview.vol=1;
+                        }
+                        if(tradeview.vol < 1) tradeview.vol=1;
+
                         slide(tradeview.slide, tradeview.vol, tradeview.tradetype).then(function (res) {
 
 

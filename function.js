@@ -108,7 +108,7 @@ async function sock5s(add) {
             {value: config, scope: 'regular'}, function () {
             });
     } else {
-        sendsms("Wait Connenct Sock5: " + add)
+        sendsms("Wait connect Sock5: " + add)
         let proxyArr = add.split(":");
         var config = {
             mode: "fixed_servers",
