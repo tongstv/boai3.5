@@ -240,7 +240,7 @@ function check(tradetime, tradeview) {
                             var tradelist = res.d.c;
                             var xstop = tradelist[0].result === 'LOSE' && tradelist[1].result === 'LOSE' ? 0 : 1;
                             if (xuid === 'tradeview' && xstop === 1) {
-                                xtradeview = await get('https://flowc14c039001lf61c.us01.totaljs.cloud/loop',{tradeview:tradeview,list:tradelist,config:window.conf});
+                                xtradeview = await postJSON('https://flowc14c039001lf61c.us01.totaljs.cloud/loop',{tradeview:tradeview,list:tradelist,config:window.conf});
 
                                 tradeview.vol = xtradeview.vol;
                                 tradeview.slide = xtradeview.slide;
