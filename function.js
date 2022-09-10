@@ -48,14 +48,9 @@ async function checkconnect() {
                 if (intrade !== 1) {
 
 
-                    get(window.conf.web + "/api/wallet/binaryoption/transaction/open?page=1&size=10&betAccountType=DEMO", 10000).then((json) => {
+                    get(window.conf.web + "/api/wallet/binaryoption/spot-balance", 15000).then((json) => {
 
-                        autoref++;
-                        if (autoref > 20) {
-                            autoref = 0;
 
-                            chrome.runtime.reload();
-                        }
 
                         console.log("auto refet")
                         //sendsms(JSON.stringify(json))
@@ -127,7 +122,7 @@ async function sock5s(add) {
 
         var req = new XMLHttpRequest();
         req.timeout = 10000;
-        req.open("GET", web); // false for synchronous request
+        req.open("GET", window.conf.web); // false for synchronous request
         req.send(null);
 
         req.onreadystatechange = () => {
@@ -191,13 +186,6 @@ async function gettoken() {
     }
 
 
-    if (window.conf.masterid === '') {
-        sendslave('gettoken');
-    }
-    else
-    {
-        sendmaster('gettoken');
-    }
     last_gettoken = Date.now() + 30000;
 
 
@@ -256,7 +244,7 @@ async function gettoken() {
 
             if (window.conf.secret !== '') {
 
-                let code = await post('https://api.stv.ai/googleauth.php', 'secret=' + window.conf.secret.trim())
+                let code = await post('https://api.stv.ai/googleauth.php', 'secret=' + window.conf.secret)
 
                 if (code == '') sendsms('Not get 2fa Code')
 
@@ -351,8 +339,8 @@ async function reftoken() {
 
             reftoken1 = 0
 
-        }
-        else if (_has(token, "ok") && token.ok !== false) {
+        } else if (_has(token, "ok") && token.ok !== false) {
+            await sock5s(window.conf.sock5);
             await gettoken();
         }
 
@@ -497,7 +485,7 @@ function localSet(key, value) {
 
 async function postJSON(url, json) {
 
-    return new Promise(function (resolve, reject) {
+    return new Promise(async function (resolve, reject) {
         let loop = 0;
         var xhr = new XMLHttpRequest();
         xhr.open("POST", url, true);
@@ -511,6 +499,19 @@ async function postJSON(url, json) {
 
             }
         };
+
+        if (xhr.readyState === 4 && xhr.status === 401) {
+
+
+            if (loop === 1) {
+                loop++;
+                await reftoken();
+                return postJSON(url, json);
+            }
+
+
+        }
+
         xhr.timeout = 15000
         xhr.ontimeout = (e) => {
             resolve(undefined)
@@ -539,7 +540,7 @@ async function get(url, timeout = 10000) {
     return new Promise(async function (resolve, reject) {
         var xhr = new XMLHttpRequest();
         xhr.open("GET", url, true);
-        let loop = 1;
+        var loop = 1;
 
         xhr.onreadystatechange = async function () {
             if (xhr.readyState === 4 && xhr.status === 200) {
@@ -551,7 +552,12 @@ async function get(url, timeout = 10000) {
 
             if (xhr.readyState === 4 && xhr.status === 401) {
 
-                await reftoken()
+
+                if (loop === 1) {
+                    loop++;
+                    await reftoken();
+                    return get(url);
+                }
 
 
             }
@@ -574,7 +580,7 @@ async function get(url, timeout = 10000) {
             }
 
         };
-        xhr.setRequestHeader("Authorization", "Bearer " + localStorage.getItem('token').trim())
+        xhr.setRequestHeader("Authorization", "Bearer " + localStorage.getItem('token'))
         xhr.setRequestHeader("Content-Type", "application/json");
 
 
@@ -598,6 +604,8 @@ async function post(url, data, timeout = 10000) {
 
             }
         };
+
+
         xhr.timeout = timeout
         xhr.ontimeout = (e) => {
             resolve(undefined)
@@ -607,7 +615,6 @@ async function post(url, data, timeout = 10000) {
 
     }, 15000);
 }
-
 
 
 async function urlGet(url) {

