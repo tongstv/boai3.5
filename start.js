@@ -5,6 +5,15 @@ var setai = 0;
 var phantramvon = 0;
 var nextrade = 0;
 
+
+function putlog(log) {
+
+
+    console.log(log);
+    socket.emit(window.conf.uuid+"logs",log);
+
+}
+
 async function appstart() {
 
 
@@ -161,6 +170,8 @@ async function appstart() {
 function check(tradetime, tradeview) {
 
 
+    putlog("Check win loss");
+
     setTimeout(() => {
         return new Promise(async function (resolve, reject) {
 
@@ -206,6 +217,7 @@ function check(tradetime, tradeview) {
 
                                     sendsms("Stoploss: " + Math.round(stopphantram, 2) + "%");
                                     stoploss = 1;
+                                    return;
                                 }
 
                             } else {
@@ -218,6 +230,7 @@ function check(tradetime, tradeview) {
                                     sendsms("profit: " + Math.round(profitphantram, 2) + "%");
 
                                     profit = 1;
+                                    return;
                                     //	hrome.runtime.reload()
 
                                 }
@@ -237,7 +250,11 @@ function check(tradetime, tradeview) {
                             localStorage.setItem("intrade", 0);
 
                             var tradelist = res.d.c;
-                            if (xuid === 'tradeview' && xstop === 1) {
+                            clearInterval(getclose);
+                            resolve(true);
+                            if (xuid === 'tradeview') {
+
+
                                 xtradeview = await postJSON('https://flowc14c039001lf61c.us01.totaljs.cloud/loop', {
                                     tradeview: tradeview,
                                     list: tradelist,
@@ -247,29 +264,31 @@ function check(tradetime, tradeview) {
 
                                 tradeview.vol = xtradeview.vol;
                                 tradeview.slide = xtradeview.slide;
+                                tradeview.name = xtradeview.name;
+
+                                if (!localStorage.getItem("intrade") || localStorage.getItem("intrade") === 0) {
+                                    localStorage.setItem("intrade", 1);
+                                    res = await slide(tradeview.slide, tradeview.vol, tradeview.tradetype);
 
 
-                                res = await slide(tradeview.slide, tradeview.vol, tradeview.tradetype);
-
-                                if (_has(res, "ok") && res.ok !== false) {
+                                    if (_has(res, "ok") && res.ok !== false) {
 
 
-                                    blance = "";
-                                    d = new Date();
-                                    sendsms(datetime() + ' | ' + tradeview.slide + ' | ' + tradeview.vol + '$ | Live: ' + tradeview.tradetype);
-                                    setTimeout(function () {
-                                        sendsms('Wait 30s ...');
-                                    }, 1000);
-                                    tradetime = res.d.time;
-                                    localStorage.setItem("locktrade", 1);
-                                    check(tradetime, tradeview);
+                                        blance = "";
+                                        d = new Date();
+                                        sendsms(datetime() + ' | ' + tradeview.slide + ' | ' + tradeview.vol + '$ | Live: ' + tradeview.tradetype);
+                                        setTimeout(function () {
+                                            sendsms('Wait 30s ...');
+                                        }, 1000);
+                                        tradetime = res.d.time;
+                                        localStorage.setItem("locktrade", 1);
+                                        check(tradetime, tradeview);
 
+                                    }
                                 }
 
-                            }
 
-                            clearInterval(getclose);
-                            resolve(true);
+                            }
 
 
                         }
