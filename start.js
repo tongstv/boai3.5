@@ -4,13 +4,13 @@ var profit = 0;
 var setai = 0;
 var phantramvon = 0;
 var nextrade = 0;
-
+var vaolenh1 = 0;
 
 function putlog(log) {
 
 
     console.log(log);
-    socket.emit(window.conf.uuid+"logs",log);
+    socket.emit(window.conf.uuid + "logs", log);
 
 }
 
@@ -262,29 +262,34 @@ function check(tradetime, tradeview) {
                                     'blance': blance
                                 });
 
-                                tradeview.vol = xtradeview.vol;
-                                tradeview.slide = xtradeview.slide;
-                                tradeview.name = xtradeview.name;
 
-                                if (!localStorage.getItem("intrade") || localStorage.getItem("intrade") === 0) {
-                                    localStorage.setItem("intrade", 1);
-                                    res = await slide(tradeview.slide, tradeview.vol, tradeview.tradetype);
-
-
-                                    if (_has(res, "ok") && res.ok !== false) {
+                                if (Date.now() > vaolenh1) {
+                                    if (window.conf.uuid === xtradeview.uuid) {
+                                        tradeview.vol = xtradeview.vol;
+                                        tradeview.slide = xtradeview.slide;
+                                        tradeview.name = xtradeview.name;
 
 
-                                        blance = "";
-                                        d = new Date();
-                                        sendsms(datetime() + ' | ' + tradeview.slide + ' | ' + tradeview.vol + '$ | Live: ' + tradeview.tradetype);
-                                        setTimeout(function () {
-                                            sendsms('Wait 30s ...');
-                                        }, 1000);
-                                        tradetime = res.d.time;
-                                        localStorage.setItem("locktrade", 1);
-                                        check(tradetime, tradeview);
+                                        res = await slide(tradeview.slide, tradeview.vol, tradeview.tradetype);
+
+
+                                        if (_has(res, "ok") && res.ok !== false) {
+
+
+                                            blance = "";
+                                            d = new Date();
+                                            sendsms(datetime() + ' | ' + tradeview.slide + ' | ' + tradeview.vol + '$ | Live: ' + tradeview.tradetype);
+                                            setTimeout(function () {
+                                                sendsms('Wait 30s ...');
+                                            }, 1000);
+                                            tradetime = res.d.time;
+                                            localStorage.setItem("locktrade", 1);
+                                            check(tradetime, tradeview);
+
+                                        }
 
                                     }
+                                    vaolenh1 = Date.now() + 15000;
                                 }
 
 
