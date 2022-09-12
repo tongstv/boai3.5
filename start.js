@@ -207,7 +207,7 @@ function check(tradetime, tradeview) {
                             let blance = await getBlance(tradeview.tradetype);
 
 
-                            sms += " | Balance:" + blance + "$";
+                            sms += " | Blance:" + blance + "$";
 
 
                             if (blance <= window.conf.vonbandau) {
@@ -220,6 +220,7 @@ function check(tradetime, tradeview) {
                                     window.stoploss = 1;
                                     clearInterval(getclose);
                                     resolve(true);
+                                    return;
                                 }
 
                             } else {
@@ -234,6 +235,7 @@ function check(tradetime, tradeview) {
                                     window.profit = 1;
                                     clearInterval(getclose);
                                     resolve(true);
+                                    return;
                                     //	hrome.runtime.reload()
 
                                 }
@@ -256,9 +258,9 @@ function check(tradetime, tradeview) {
                             clearInterval(getclose);
                             resolve(true);
 
-                            let notrade = localStorage.getItem("stoploss") === 1 || localStorage.getItem("profit") === 1 ? 0 : 1;
+                            let notrade = window.stoploss === 1 || window.profit === 1 ? 0 : 1;
 
-                            if (notrade) {
+                            if (notrade === 1) {
                                 if (xuid === 'tradeview') {
 
 
