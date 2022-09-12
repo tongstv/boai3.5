@@ -218,7 +218,8 @@ function check(tradetime, tradeview) {
 
                                     sendsms("Stoploss: " + Math.round(stopphantram, 2) + "%");
                                     window.stoploss = 1;
-                                    return;
+                                    clearInterval(getclose);
+                                    resolve(true);
                                 }
 
                             } else {
@@ -231,7 +232,8 @@ function check(tradetime, tradeview) {
                                     sendsms("profit: " + Math.round(profitphantram, 2) + "%");
 
                                     window.profit = 1;
-                                    return;
+                                    clearInterval(getclose);
+                                    resolve(true);
                                     //	hrome.runtime.reload()
 
                                 }
