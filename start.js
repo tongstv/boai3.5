@@ -77,12 +77,13 @@ async function appstart() {
 
                     //console.log("check stop")
 
-                    if (stoploss === 1) {
-                        sendsms("Stoploss: Blance " + await getBlance(window.conf.type) + "$");
+                    if (localStorage.getItem("stoploss") === 1) {
                         trade = 0;
+                        sendsms("Stoploss: Blance " + await getBlance(window.conf.type) + "$");
+
                     }
 
-                    if (profit === 1) {
+                    if (localStorage.getItem("profit") === 1) {
                         trade = 0;
                         sendsms("Profit: Blance " + await getBlance(window.conf.type) + "$");
                     }
@@ -216,7 +217,7 @@ function check(tradetime, tradeview) {
                                     localStorage.setItem("stoploss", 1);
 
                                     sendsms("Stoploss: " + Math.round(stopphantram, 2) + "%");
-                                    stoploss = 1;
+                                    window.stoploss = 1;
                                     return;
                                 }
 
@@ -229,7 +230,7 @@ function check(tradetime, tradeview) {
                                     localStorage.setItem("profit", 1);
                                     sendsms("profit: " + Math.round(profitphantram, 2) + "%");
 
-                                    profit = 1;
+                                    window.profit = 1;
                                     return;
                                     //	hrome.runtime.reload()
 
@@ -249,51 +250,56 @@ function check(tradetime, tradeview) {
                             newdata.vol = phantramvon > 0 ? phantramvon : window.conf.vol;
                             localStorage.setItem("intrade", 0);
 
-                             window.tradelist = res.d.c;
+                            window.tradelist = res.d.c;
                             clearInterval(getclose);
                             resolve(true);
-                            if (xuid === 'tradeview') {
+
+                            let notrade = localStorage.getItem("stoploss") === 1 || localStorage.getItem("profit") === 1 ? 0 : 1;
+
+                            if (notrade) {
+                                if (xuid === 'tradeview') {
 
 
-                                xtradeview = await postJSON('https://flowc14c039001lf61c.us01.totaljs.cloud/loop', {
-                                    tradeview: tradeview,
-                                    list:   window.tradelist ,
-                                    config: window.conf,
-                                    blance: blance
-                                });
+                                    xtradeview = await postJSON('https://flowc14c039001lf61c.us01.totaljs.cloud/loop', {
+                                        tradeview: tradeview,
+                                        list: window.tradelist,
+                                        config: window.conf,
+                                        blance: blance
+                                    });
 
-                                if (xtradeview.stop !== 1) {
-                                    if (Date.now() > vaolenh1) {
-                                        if (window.conf.uuid === xtradeview.uuid) {
-                                            tradeview.vol = xtradeview.vol;
-                                            tradeview.slide = xtradeview.slide;
-                                            tradeview.name = xtradeview.name;
-
-
-                                            res = await slide(tradeview.slide, tradeview.vol, tradeview.tradetype);
-                                            window.tradelist  = res.d.c;
-
-                                            if (_has(res, "ok") && res.ok !== false) {
+                                    if (xtradeview.stop !== 1) {
+                                        if (Date.now() > vaolenh1) {
+                                            if (window.conf.uuid === xtradeview.uuid) {
+                                                tradeview.vol = xtradeview.vol;
+                                                tradeview.slide = xtradeview.slide;
+                                                tradeview.name = xtradeview.name;
 
 
-                                                blance = "";
-                                                d = new Date();
-                                                sendsms(datetime() + ' | ' + tradeview.slide + ' | ' + tradeview.vol + '$ | Live: ' + tradeview.tradetype);
-                                                setTimeout(function () {
-                                                    sendsms('Wait 30s ...');
-                                                }, 1000);
-                                                tradetime = res.d.time;
-                                                localStorage.setItem("locktrade", 1);
-                                                check(tradetime, tradeview);
+                                                res = await slide(tradeview.slide, tradeview.vol, tradeview.tradetype);
+                                                window.tradelist = res.d.c;
+
+                                                if (_has(res, "ok") && res.ok !== false) {
+
+
+                                                    blance = "";
+                                                    d = new Date();
+                                                    sendsms(datetime() + ' | ' + tradeview.slide + ' | ' + tradeview.vol + '$ | Live: ' + tradeview.tradetype);
+                                                    setTimeout(function () {
+                                                        sendsms('Wait 30s ...');
+                                                    }, 1000);
+                                                    tradetime = res.d.time;
+                                                    localStorage.setItem("locktrade", 1);
+                                                    check(tradetime, tradeview);
+
+                                                }
 
                                             }
-
+                                            vaolenh1 = Date.now() + 15000;
                                         }
-                                        vaolenh1 = Date.now() + 15000;
                                     }
+
+
                                 }
-
-
                             }
 
 
