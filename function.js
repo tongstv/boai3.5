@@ -51,7 +51,6 @@ async function checkconnect() {
                     get(window.conf.web + "/api/wallet/binaryoption/spot-balance", 15000).then((json) => {
 
 
-
                         console.log("auto refet")
                         //sendsms(JSON.stringify(json))
                     })
@@ -339,10 +338,11 @@ async function reftoken() {
 
             reftoken1 = 0
 
-        } else if (_has(token, "ok") && token.ok !== false) {
+        } else if (_has(token, "ok") && token.ok === false) {
             await sock5s(window.conf.sock5);
             await gettoken();
         }
+
 
         return token
 
@@ -377,7 +377,7 @@ async function slide(type, vol, demo = "DEMO") {
     return new Promise(async function (resolve, reject) {
 
         console.log(data)
-
+        reftoken();
         res = await trade(window.conf.web + "/api/wallet/binaryoption/bet", data)
 
         if (_has(res, "ok") && res.ok !== false) {
@@ -485,108 +485,122 @@ function localSet(key, value) {
 
 async function postJSON(url, json) {
 
-    return new Promise(async function (resolve, reject) {
-        let loop = 0;
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", url, true);
-        xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4 && xhr.status === 200) {
+    try {
 
-                //  console.log(url);
-                json = JSON.parse(xhr.responseText)
+
+        return new Promise(async function (resolve, reject) {
+            let loop = 0;
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+
+                    //  console.log(url);
+                    json = JSON.parse(xhr.responseText)
+                    resolve(json);
+
+                }
+            };
+
+            if (xhr.readyState === 4 && xhr.status === 401) {
+
+
+                await reftoken();
+                json = await postJSON(url, json);
+
                 resolve(json);
 
-            }
-        };
 
-        if (xhr.readyState === 4 && xhr.status === 401) {
-
-
-            if (loop === 1) {
-                loop++;
-                await reftoken();
-                return postJSON(url, json);
             }
 
-
-        }
-
-        xhr.timeout = 15000
-        xhr.ontimeout = (e) => {
-            resolve(undefined)
-
-            loop++;
-
-            if (loop >= 3) {
+            xhr.timeout = 15000
+            xhr.ontimeout = (e) => {
                 resolve(undefined)
 
-            } else if (loop > 2) {
+                loop++;
 
-                sock5s(window.conf.sock5);
+                if (loop >= 3) {
+                    resolve(undefined)
 
-            }
-        };
-        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        xhr.send(JSON.stringify(json))
+                } else if (loop > 2) {
 
-    });
+                    sock5s(window.conf.sock5);
+
+                }
+            };
+            xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            xhr.send(JSON.stringify(json))
+
+        });
+    }
+    catch (e) {
+        e.url = url;
+        putlog(e);
+
+    }
 }
 
 
 async function get(url, timeout = 10000) {
 
 
-    return new Promise(async function (resolve, reject) {
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", url, true);
-        var loop = 1;
-
-        xhr.onreadystatechange = async function () {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                json = JSON.parse(xhr.responseText)
-                resolve(json);
+    try {
+        return new Promise(async function (resolve, reject) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", url, true);
 
 
-            }
+            xhr.onreadystatechange = async function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    json = JSON.parse(xhr.responseText)
+                    resolve(json);
 
-            if (xhr.readyState === 4 && xhr.status === 401) {
 
-
-                if (loop === 1) {
-                    loop++;
-                    await reftoken();
-                    return get(url);
                 }
 
-
-            }
-
-        };
-
-        xhr.timeout = timeout
-        xhr.ontimeout = (e) => {
+                if (xhr.readyState === 4 && xhr.status === 401) {
 
 
-            loop++;
-
-            if (loop >= 3) {
-                resolve(undefined)
-
-            } else if (loop > 2) {
-
-                sock5s(window.conf.sock5);
-
-            }
-
-        };
-        xhr.setRequestHeader("Authorization", "Bearer " + localStorage.getItem('token'))
-        xhr.setRequestHeader("Content-Type", "application/json");
+                    await reftoken();
+                    json = await get(url);
+                    resolve(json);
 
 
-        xhr.send()
+                }
 
-    });
+            };
+
+            xhr.timeout = timeout
+            xhr.ontimeout = (e) => {
+
+
+                loop++;
+
+                if (loop >= 3) {
+                    resolve(undefined)
+
+                } else if (loop > 2) {
+
+                    sock5s(window.conf.sock5);
+
+                }
+
+            };
+            xhr.setRequestHeader("Authorization", "Bearer " + localStorage.getItem('token'))
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+
+            xhr.send()
+
+        });
+    }
+    catch (e) {
+
+        e.url = url;
+        putlog(e);
+    }
+
 }
 
 

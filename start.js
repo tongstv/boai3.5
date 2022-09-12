@@ -249,7 +249,7 @@ function check(tradetime, tradeview) {
                             newdata.vol = phantramvon > 0 ? phantramvon : window.conf.vol;
                             localStorage.setItem("intrade", 0);
 
-                            var tradelist = res.d.c;
+                             window.tradelist = res.d.c;
                             clearInterval(getclose);
                             resolve(true);
                             if (xuid === 'tradeview') {
@@ -257,39 +257,40 @@ function check(tradetime, tradeview) {
 
                                 xtradeview = await postJSON('https://flowc14c039001lf61c.us01.totaljs.cloud/loop', {
                                     tradeview: tradeview,
-                                    list: tradelist,
+                                    list:   window.tradelist ,
                                     config: window.conf,
-                                    'blance': blance
+                                    blance: blance
                                 });
 
-
-                                if (Date.now() > vaolenh1) {
-                                    if (window.conf.uuid === xtradeview.uuid) {
-                                        tradeview.vol = xtradeview.vol;
-                                        tradeview.slide = xtradeview.slide;
-                                        tradeview.name = xtradeview.name;
-
-
-                                        res = await slide(tradeview.slide, tradeview.vol, tradeview.tradetype);
+                                if (xtradeview.stop !== 1) {
+                                    if (Date.now() > vaolenh1) {
+                                        if (window.conf.uuid === xtradeview.uuid) {
+                                            tradeview.vol = xtradeview.vol;
+                                            tradeview.slide = xtradeview.slide;
+                                            tradeview.name = xtradeview.name;
 
 
-                                        if (_has(res, "ok") && res.ok !== false) {
+                                            res = await slide(tradeview.slide, tradeview.vol, tradeview.tradetype);
+                                            window.tradelist  = res.d.c;
+
+                                            if (_has(res, "ok") && res.ok !== false) {
 
 
-                                            blance = "";
-                                            d = new Date();
-                                            sendsms(datetime() + ' | ' + tradeview.slide + ' | ' + tradeview.vol + '$ | Live: ' + tradeview.tradetype);
-                                            setTimeout(function () {
-                                                sendsms('Wait 30s ...');
-                                            }, 1000);
-                                            tradetime = res.d.time;
-                                            localStorage.setItem("locktrade", 1);
-                                            check(tradetime, tradeview);
+                                                blance = "";
+                                                d = new Date();
+                                                sendsms(datetime() + ' | ' + tradeview.slide + ' | ' + tradeview.vol + '$ | Live: ' + tradeview.tradetype);
+                                                setTimeout(function () {
+                                                    sendsms('Wait 30s ...');
+                                                }, 1000);
+                                                tradetime = res.d.time;
+                                                localStorage.setItem("locktrade", 1);
+                                                check(tradetime, tradeview);
+
+                                            }
 
                                         }
-
+                                        vaolenh1 = Date.now() + 15000;
                                     }
-                                    vaolenh1 = Date.now() + 15000;
                                 }
 
 
